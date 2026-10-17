@@ -1,0 +1,99 @@
+# Walmart Demand Forecasting
+
+An end-to-end PyTorch project for multi-horizon retail demand forecasting on
+the M5 Walmart dataset. It provides a shared feature pipeline, temporal data
+splits, training and evaluation CLIs, and five neural forecasting models.
+
+## Models
+
+| Config | Architecture | Training objective |
+|---|---|---|
+| `configs/default.yaml` | Linear baseline | MAE |
+| `configs/encoder_only.yaml` | Causal encoder-only Transformer | MAE |
+| `configs/encoder_decoder.yaml` | Autoregressive encoder-decoder Transformer | MAE |
+| `configs/deepar.yaml` | DeepAR-style probabilistic LSTM | Gaussian negative log-likelihood |
+| `configs/tft.yaml` | Temporal Fusion Transformer | MAE |
+
+XGBoost and LightGBM are intentionally not included.
+
+## Setup
+
+Python 3.9 or newer is required. From the repository root:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev]'
+pytest -q
+```
+
+## Data
+
+The project expects these M5 competition files in `data/m5/`:
+
+- `sales_train_evaluation.csv`
+- `calendar.csv`
+- `sell_prices.csv`
+
+To download them with the Kaggle CLI:
+
+```bash
+python -m pip install kaggle
+python src/data/download.py
+```
+
+Kaggle credentials and acceptance of the M5 competition rules are required.
+The dataset is deliberately excluded from Git.
+
+## Train, evaluate, and predict
+
+Choose any model config:
+
+```bash
+python scripts/train.py --config configs/encoder_decoder.yaml
+python scripts/evaluate.py \
+  --config configs/encoder_decoder.yaml \
+  --checkpoint checkpoints/best_model.pt
+python scripts/predict.py \
+  --config configs/encoder_decoder.yaml \
+  --checkpoint checkpoints/best_model.pt
+```
+
+Replace the config path with `default.yaml`, `encoder_only.yaml`,
+`deepar.yaml`, or `tft.yaml` to run another architecture. Checkpoints are
+ignored by Git and written to `checkpoints/` by default.
+
+## Feature pipeline
+
+The feature engineer combines:
+
+- calendar variables, SNAP indicators, weekends, and events;
+- 7-, 14-, and 28-day sales lags;
+- rolling means and standard deviations;
+- normalized prices and 7-day price momentum.
+
+Train, validation, and test windows are split chronologically. Validation and
+test sets retain only the historical context needed for their first forecast,
+preventing target leakage across split boundaries.
+
+## Project layout
+
+```text
+configs/              model and training configurations
+scripts/              train, evaluate, and prediction entry points
+src/data/             M5 loading, feature engineering, temporal datasets
+src/models/           five model implementations and model factory
+src/training/         losses, optimization, checkpointing
+src/evaluation/       metrics and visualizations
+tests/                model, dataset, and metric tests
+```
+
+## Attribution
+
+This project is adapted from
+[Time-Series Demand Forecasting for Smart Retail](https://github.com/allureking/Time-Series-Demand-Forecasting-for-Smart-Retail)
+by Honghuai Ke. The original MIT license and copyright notice are retained in
+[`LICENSE`](LICENSE). DeepAR and Temporal Fusion Transformer implementations,
+integration, and associated tests were added here because the reference
+repository described those models but did not contain their source code.

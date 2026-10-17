@@ -1,0 +1,22 @@
+# DeepAR probabilistic recurrent model
+model:
+  name: deepar
+  input_window: 28
+  forecast_horizon: 28
+  hidden_size: 128
+  n_lstm_layers: 2
+  dropout: 0.1
+
+data:
+  data_dir: data/m5
+  train_ratio: 0.8
+  val_ratio: 0.1
+
+training:
+  epochs: 100
+  batch_size: 128
+  learning_rate: 0.0005
+  scheduler: reduce_on_plateau
+  patience: 10
+  num_workers: 4
+  device: auto

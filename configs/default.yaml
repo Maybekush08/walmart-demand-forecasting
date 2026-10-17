@@ -1,0 +1,29 @@
+# Linear baseline configuration
+model:
+  name: linear
+  input_window: 28
+  forecast_horizon: 28
+
+data:
+  data_dir: data/m5
+  target_col: sales
+  features:
+    - sales
+    - day_of_week
+    - month
+    - snap
+    - sell_price
+  lag_features: [7, 14, 28]
+  rolling_windows: [7, 28]
+  train_ratio: 0.8
+  val_ratio: 0.1
+
+training:
+  epochs: 50
+  batch_size: 256
+  learning_rate: 0.001
+  optimizer: adam
+  scheduler: reduce_on_plateau
+  patience: 5
+  num_workers: 4
+  device: auto

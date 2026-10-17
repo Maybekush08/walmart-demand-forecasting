@@ -1,0 +1,36 @@
+# Encoder-Decoder Transformer configuration (best model)
+model:
+  name: encoder_decoder
+  input_window: 28
+  forecast_horizon: 28
+  d_model: 128
+  n_heads: 8
+  n_encoder_layers: 3
+  n_decoder_layers: 3
+  d_ff: 512
+  dropout: 0.1
+
+data:
+  data_dir: data/m5
+  target_col: sales
+  features:
+    - sales
+    - day_of_week
+    - month
+    - snap
+    - sell_price
+  lag_features: [7, 14, 28]
+  rolling_windows: [7, 28]
+  train_ratio: 0.8
+  val_ratio: 0.1
+
+training:
+  epochs: 100
+  batch_size: 128
+  learning_rate: 0.0001
+  optimizer: adam
+  scheduler: cosine
+  warmup_steps: 1000
+  patience: 10
+  num_workers: 4
+  device: auto
