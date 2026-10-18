@@ -54,6 +54,54 @@ to select another scope; set either value to `null` to disable that filter.
 
 ## Train, evaluate, and predict
 
+### Run every model and create one report
+
+From the repository root, run:
+
+```bash
+python scripts/run_all.py
+```
+
+For a short first pass that verifies the complete workflow, use:
+
+```bash
+python scripts/run_all.py --epochs 2
+```
+
+This trains all five models in sequence and creates one self-contained file at
+`experiment_report.html`. Open that file in any browser to review:
+
+- validation and test metrics for every successful model;
+- parameter counts and training durations;
+- model-comparison charts;
+- validation-loss and learning-rate curves;
+- held-out forecast plots; and
+- complete per-epoch histories and model configurations.
+
+Charts are embedded directly in the HTML, so the report can be copied or shared
+as one file. It is rewritten after each model finishes, preserving partial
+results if a later model fails. Binary weights are stored separately under
+`checkpoints/<model-name>/` so models can still be evaluated and reused.
+
+On Windows PowerShell:
+
+```powershell
+python scripts\run_all.py
+Start-Process .\experiment_report.html
+```
+
+Use `--report` to change the filename, `--samples` to change the number of
+embedded forecast examples, `--epochs` to override every model's epoch count,
+or `--configs` to run a selected subset:
+
+```bash
+python scripts/run_all.py --samples 5 --configs configs/default.yaml configs/deepar.yaml
+```
+
+Data-loader workers default to zero for reliable laptop and Windows execution.
+
+### Run one model manually
+
 Choose any model config:
 
 ```bash
@@ -87,7 +135,7 @@ preventing target leakage across split boundaries.
 
 ```text
 configs/              model and training configurations
-scripts/              train, evaluate, and prediction entry points
+scripts/              training, all-model reporting, evaluation, and prediction
 src/data/             M5 loading, feature engineering, temporal datasets
 src/models/           five model implementations and model factory
 src/training/         losses, optimization, checkpointing

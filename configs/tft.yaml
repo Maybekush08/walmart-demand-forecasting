@@ -22,5 +22,5 @@ training:
   learning_rate: 0.0001
   scheduler: cosine
   patience: 10
-  num_workers: 4
+  num_workers: 0
   device: auto

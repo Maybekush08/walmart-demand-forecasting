@@ -34,6 +34,8 @@ checkpoints/
 logs/
 *.log
 wandb/
+experiment_report.html
+experiment_report.html.tmp
 
 # OS
 .DS_Store

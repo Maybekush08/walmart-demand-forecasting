@@ -159,7 +159,7 @@ class Trainer:
             elapsed = time.time() - start_time
             print(
                 f"Epoch {epoch:3d}/{self.config.epochs} | "
-                f"Train MAE: {train_loss:.2f} | "
+                f"Train loss: {train_loss:.2f} | "
                 f"Val MAE: {val_loss:.2f} | "
                 f"LR: {current_lr:.6f} | "
                 f"Time: {elapsed / 60:.1f}m"

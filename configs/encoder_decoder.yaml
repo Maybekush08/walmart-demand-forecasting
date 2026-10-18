@@ -34,5 +34,5 @@ training:
   scheduler: cosine
   warmup_steps: 1000
   patience: 10
-  num_workers: 4
+  num_workers: 0
   device: auto
