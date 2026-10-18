@@ -9,6 +9,8 @@ model:
 
 data:
   data_dir: data/m5
+  store_id: CA_1
+  history_days: 365
   train_ratio: 0.8
   val_ratio: 0.1
 

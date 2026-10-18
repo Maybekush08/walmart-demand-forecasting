@@ -21,14 +21,65 @@ class FeatureEngineer:
     LAG_DAYS = (7, 14, 28)
     ROLLING_WINDOWS = (7, 14, 28)
 
-    def __init__(self, data_dir: str = "data/m5") -> None:
+    def __init__(
+        self,
+        data_dir: str = "data/m5",
+        store_id: str | None = "CA_1",
+        history_days: int | None = 365,
+    ) -> None:
         self.data_dir = data_dir
+        self.store_id = store_id
+        self.history_days = history_days
+        if history_days is not None and history_days <= 0:
+            raise ValueError("history_days must be positive or None")
 
     def load_raw(self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-        """Load the three raw M5 CSV files."""
+        """Load M5 files and restrict them before feature construction."""
         sales = pd.read_csv(f"{self.data_dir}/sales_train_evaluation.csv")
         calendar = pd.read_csv(f"{self.data_dir}/calendar.csv")
         prices = pd.read_csv(f"{self.data_dir}/sell_prices.csv")
+
+        if self.store_id is not None:
+            sales = sales.loc[sales["store_id"] == self.store_id].copy()
+            prices = prices.loc[prices["store_id"] == self.store_id].copy()
+            if sales.empty:
+                raise ValueError(f"store_id {self.store_id!r} was not found")
+
+        day_cols = sorted(
+            (column for column in sales.columns if column.startswith("d_")),
+            key=lambda column: int(column.removeprefix("d_")),
+        )
+        if self.history_days is not None:
+            if len(day_cols) < self.history_days:
+                raise ValueError(
+                    f"requested {self.history_days} history days, "
+                    f"but only {len(day_cols)} are available"
+                )
+            day_cols = day_cols[-self.history_days :]
+
+        metadata_cols = [
+            column for column in sales.columns if not column.startswith("d_")
+        ]
+        sales = sales.loc[:, metadata_cols + day_cols].reset_index(drop=True)
+
+        # Align calendar positions to the retained sales columns. This is
+        # essential when keeping the latest N days rather than d_1 onward.
+        day_order = {day: position for position, day in enumerate(day_cols)}
+        calendar = calendar.loc[calendar["d"].isin(day_order)].copy()
+        if len(calendar) != len(day_cols):
+            raise ValueError("calendar does not contain every retained sales day")
+        calendar["_day_order"] = calendar["d"].map(day_order)
+        calendar = (
+            calendar.sort_values("_day_order")
+            .drop(columns="_day_order")
+            .reset_index(drop=True)
+        )
+
+        # Retain only price weeks needed by the selected store and date range.
+        retained_weeks = calendar["wm_yr_wk"].unique()
+        prices = prices.loc[prices["wm_yr_wk"].isin(retained_weeks)].reset_index(
+            drop=True
+        )
         return sales, calendar, prices
 
     def extract_sales_matrix(self, sales_df: pd.DataFrame) -> np.ndarray:
@@ -107,7 +158,7 @@ class FeatureEngineer:
           - price_momentum (current_price - price_lag_7)
         """
         cal_wm = calendar[["d", "wm_yr_wk"]].copy()
-        cal_wm["day_idx"] = cal_wm["d"].str.replace("d_", "").astype(int) - 1
+        cal_wm["day_idx"] = np.arange(len(cal_wm))
 
         n_series = len(sales_df)
         price_features = np.zeros((n_series, n_days, 2), dtype=np.float32)
@@ -151,6 +202,11 @@ class FeatureEngineer:
         sales_df, calendar, prices = self.load_raw()
         sales_matrix = self.extract_sales_matrix(sales_df)
         n_series, n_days = sales_matrix.shape
+        if len(calendar) != n_days:
+            raise ValueError(
+                "calendar and sales history are misaligned: "
+                f"calendar_days={len(calendar)}, sales_days={n_days}"
+            )
 
         # Calendar features → broadcast to (n_series, n_days, n_cal)
         cal_feats = self.build_calendar_features(calendar)[:n_days]

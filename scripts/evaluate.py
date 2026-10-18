@@ -32,7 +32,11 @@ def main() -> None:
     config = load_config(args.config)
 
     # Load data
-    engineer = FeatureEngineer(config.data.data_dir)
+    engineer = FeatureEngineer(
+        config.data.data_dir,
+        store_id=config.data.store_id,
+        history_days=config.data.history_days,
+    )
     sales_matrix, features = engineer.build_all_features()
     n_features = features.shape[2] + 1
 

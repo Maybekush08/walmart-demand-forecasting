@@ -14,6 +14,8 @@ class DataConfig:
     """Data loading and feature engineering settings."""
 
     data_dir: str = "data/m5"
+    store_id: str | None = "CA_1"
+    history_days: int | None = 365
     target_col: str = "sales"
     features: tuple[str, ...] = (
         "sales", "day_of_week", "month", "snap", "sell_price",

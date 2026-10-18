@@ -39,7 +39,15 @@ def main() -> None:
 
     # Feature engineering
     print("\nBuilding features...")
-    engineer = FeatureEngineer(config.data.data_dir)
+    engineer = FeatureEngineer(
+        config.data.data_dir,
+        store_id=config.data.store_id,
+        history_days=config.data.history_days,
+    )
+    print(
+        f"  Scope: store={config.data.store_id}, "
+        f"latest_days={config.data.history_days}"
+    )
     sales_matrix, features = engineer.build_all_features()
     print(f"  Sales matrix: {sales_matrix.shape}")
     print(f"  Features: {features.shape}")

@@ -12,6 +12,8 @@ model:
 
 data:
   data_dir: data/m5
+  store_id: CA_1
+  history_days: 365
   target_col: sales
   features:
     - sales

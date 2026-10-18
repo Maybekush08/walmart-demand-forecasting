@@ -46,6 +46,12 @@ python src/data/download.py
 Kaggle credentials and acceptance of the M5 competition rules are required.
 The dataset is deliberately excluded from Git.
 
+By default, every model configuration filters the raw files to store `CA_1`
+and retains its latest 365 sales days before constructing features. This keeps
+laptop experiments tractable and ensures the full ten-store feature tensor is
+never materialized. Change `data.store_id` or `data.history_days` in a YAML file
+to select another scope; set either value to `null` to disable that filter.
+
 ## Train, evaluate, and predict
 
 Choose any model config:
