@@ -36,6 +36,7 @@ logs/
 wandb/
 experiment_report.html
 experiment_report.html.tmp
+experiment_run.pid
 
 # OS
 .DS_Store

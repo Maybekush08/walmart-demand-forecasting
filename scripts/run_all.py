@@ -14,6 +14,7 @@ import sys
 import time
 import traceback
 from dataclasses import asdict, replace
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -140,6 +141,8 @@ def main() -> None:
     )
 
     metadata = {
+        "run_status": "running",
+        "started_at": datetime.now().astimezone().isoformat(),
         "store_id": first.data.store_id,
         "history_days": first.data.history_days,
         "series": int(sales.shape[0]),
@@ -231,6 +234,9 @@ def main() -> None:
                 torch.cuda.empty_cache()
 
     completed = sum(run["status"] == "completed" for run in runs.values())
+    metadata["run_status"] = "completed"
+    metadata["finished_at"] = datetime.now().astimezone().isoformat()
+    write_experiment_report(report_path, runs, metadata)
     print(
         f"\nFinished {completed}/{len(runs)} models. "
         f"Open {report_path.resolve()} in a web browser."

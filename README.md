@@ -56,6 +56,26 @@ to select another scope; set either value to `null` to disable that filter.
 
 ### Run every model and create one report
 
+#### One-click Windows setup and background run
+
+On Windows, double-click `START_ALL_MODELS.cmd` in the project folder. The
+launcher performs the complete workflow automatically:
+
+1. verifies the three M5 CSV files under `data/m5/`;
+2. installs Python 3.12 with Windows Package Manager when Python is missing;
+3. creates `.venv` and installs the project dependencies;
+4. runs the automated test suite;
+5. prevents duplicate training processes; and
+6. starts all five models sequentially as a hidden background process.
+
+The launcher can be closed after it reports the background process ID. Running
+the launcher again while training is active opens the current report instead of
+starting a duplicate process. Once a complete report exists, it opens that report
+without retraining. Progress and diagnostic logs are written to
+`experiment_run.log` and `experiment_error.log`.
+
+#### Command-line execution
+
 From the repository root, run:
 
 ```bash
